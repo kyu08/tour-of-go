@@ -1,18 +1,18 @@
 # module
 - 大文字スタートの名前は外部のパッケージから参照できる(exported name)
 - 複数の返り値を返す関数の書き方はこう
-  ```go
-  // 定義側
-  func swap(x,y string) (string, string) {
-    return y, x
-  }
+```go
+// 定義側
+func swap(x,y string) (string, string) {
+  return y, x
+}
 
-  // 呼び出し側
+// 呼び出し側
 func main () {
-  a, b := swap("1", "2")
+a, b := swap("1", "2")
 
 }
-  ```
+```
 
 - 初期化しなくてもコンパイル通るんかーーーい
 ```go
