@@ -6,10 +6,10 @@ import (
 )
 
 // これを定義する必要があるのはなぜか
+// float64 でも文法的にはできるけど float64 に Sqrt 用のエラーを定義するのはもちろん不適切なのでこう書くべき、ということ？
 type ErrNegativeFloat float64
 
 func (e ErrNegativeFloat) Error() string {
-	// float64(e) としないと無限ループが起きるのはなぜか
 	return fmt.Sprintf("negative float is not valid: %v", float64(e))
 }
 
