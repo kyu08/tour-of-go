@@ -37,4 +37,16 @@ func main () {
   fmt.Printf("%#v", u) // main.User{age:2}
 ```
 
+# interface
+インターフェースを実装することを明示的に宣言する必要はない
+-> ある型がどんな interface なのか知りたくなった時にパッと調べることはできない？
+
+# error
+`error`型は `fmt.Stringer`に似た組み込みのインターフェースである
+```go
+type error interface {
+  Error() string
+}
+```
+
 
