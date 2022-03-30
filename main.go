@@ -2,31 +2,31 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"io"
+	"strings"
 )
 
-// これを定義する必要があるのはなぜか
-// float64 でも文法的にはできるけど float64 に Sqrt 用のエラーを定義するのはもちろん不適切なのでこう書くべき、ということ？
-type ErrNegativeFloat float64
-
-func (e ErrNegativeFloat) Error() string {
-	return fmt.Sprintf("negative float is not valid: %v", float64(e))
-}
-
-func Sqrt(x float64) (float64, error) {
-	if x < 0 {
-		// なんでこれでエラーを呼べるのか -> String(1) のようにキャストしている？
-		return 0, ErrNegativeFloat(x)
-	}
-
-	z0, z := 1.0, x
-	for math.Abs(z-z0)/z > 1e-15 {
-		z0, z = z, z-(z*z-x)/(2*z)
-	}
-	return z, nil
-}
-
 func main() {
-	fmt.Println(Sqrt(2))
-	fmt.Println(Sqrt(-2))
+	r := strings.NewReader("Hello, Reader!")
+
+	b := make([]byte, 8)
+
+	// [疑問1]なぜこれで無限ループにならずに "Hello, Reader!" をいい感じに読んでいけるのか
+	// Read の実装を見ると `	r.i += int64(n)` とかしている。r.i の i は以下のように定義されており、 current reading index のことらしい。
+	// type Reader struct {
+	// s        string
+	// i        int64 // current reading index
+	// prevRune int   // index of previous rune; or < 0
+	// }
+
+	// [疑問2]なぜ 0 以外の n を Read から受け取れているのか
+	// Read の実装を見ると正常系では何も値を返していないように見える
+	for {
+		n, err := r.Read(b)
+		fmt.Printf("n = %v err = %v b = %v\n", n, err, b)
+		fmt.Printf("b[:n] = %q\n", b[:n])
+		if err == io.EOF {
+			break
+		}
+	}
 }
