@@ -21,6 +21,7 @@ func main() {
 
 	// [疑問2]なぜ 0 以外の n を Read から受け取れているのか
 	// Read の実装を見ると正常系では何も値を返していないように見える
+	// -> https://go-tour-jp.appspot.com/basics/7 これやで
 	for {
 		n, err := r.Read(b)
 		fmt.Printf("n = %v err = %v b = %v\n", n, err, b)
