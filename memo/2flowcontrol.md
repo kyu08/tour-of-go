@@ -27,3 +27,6 @@ func main() {
      }
 }
 ```
+
+# defer の実行順
+defer は LIFO の順番で実行される
