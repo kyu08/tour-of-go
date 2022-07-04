@@ -1,9 +1,8 @@
 # Pointers
-- ポイントは値のメモリアドレスを指す
-- 
-
+- ポインタは値のメモリアドレスを指す
 
 [go print系関数の違い](https://qiita.com/taji-taji/items/77845ef744da7c88a6fe)
+
 [go の名前空間について](https://ifritjp.github.io/documents/go/package/)
 
 
