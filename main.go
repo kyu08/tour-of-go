@@ -2,32 +2,93 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"strings"
+	"sync"
 )
 
-func main() {
-	r := strings.NewReader("Hello, Reader!")
+type Fetcher interface {
+	Fetch(url string) (body string, urls []string, err error)
+}
 
-	b := make([]byte, 8)
-
-	// [疑問1]なぜこれで無限ループにならずに "Hello, Reader!" をいい感じに読んでいけるのか
-	// Read の実装を見ると `	r.i += int64(n)` とかしている。r.i の i は以下のように定義されており、 current reading index のことらしい。
-	// type Reader struct {
-	// s        string
-	// i        int64 // current reading index
-	// prevRune int   // index of previous rune; or < 0
-	// }
-
-	// [疑問2]なぜ 0 以外の n を Read から受け取れているのか
-	// Read の実装を見ると正常系では何も値を返していないように見える
-	// -> https://go-tour-jp.appspot.com/basics/7 これやで
-	for {
-		n, err := r.Read(b)
-		fmt.Printf("n = %v err = %v b = %v\n", n, err, b)
-		fmt.Printf("b[:n] = %q\n", b[:n])
-		if err == io.EOF {
-			break
-		}
+func Crawl(url string,
+	depth int,
+	fetcher Fetcher,
+	wg *sync.WaitGroup,
+	fetchHistory map[string]bool,
+) {
+	if fetchHistory[url] || depth <= 0 {
+		return
 	}
+
+	body, urls, err := fetcher.Fetch(url)
+	fetchHistory[url] = true
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("found: %s %q\n", url, body)
+	for _, u := range urls {
+		u := u
+		wg.Add(1)
+		go func() {
+			Crawl(u, depth-1, fetcher, wg, fetchHistory)
+			wg.Done()
+		}()
+	}
+	return
+}
+
+func main() {
+	wg := &sync.WaitGroup{}
+	fetchHistory := map[string]bool{}
+	Crawl("https://golang.org/", 4, fetcher, wg, fetchHistory)
+	wg.Wait()
+	fmt.Println("process done!")
+}
+
+type fakeFetcher map[string]*fakeResult
+
+type fakeResult struct {
+	body string
+	urls []string
+}
+
+func (f fakeFetcher) Fetch(url string) (string, []string, error) {
+	if res, ok := f[url]; ok {
+		return res.body, res.urls, nil
+	}
+	return "", nil, fmt.Errorf("not found: %s", url)
+}
+
+var fetcher = fakeFetcher{
+	"https://golang.org/": &fakeResult{
+		"The Go Programming Language",
+		[]string{
+			"https://golang.org/pkg/",
+			"https://golang.org/cmd/",
+		},
+	},
+	"https://golang.org/pkg/": &fakeResult{
+		"Packages",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/cmd/",
+			"https://golang.org/pkg/fmt/",
+			"https://golang.org/pkg/os/",
+		},
+	},
+	"https://golang.org/pkg/fmt/": &fakeResult{
+		"Package fmt",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/pkg/",
+		},
+	},
+	"https://golang.org/pkg/os/": &fakeResult{
+		"Package os",
+		[]string{
+			"https://golang.org/",
+			"https://golang.org/pkg/",
+		},
+	},
 }
